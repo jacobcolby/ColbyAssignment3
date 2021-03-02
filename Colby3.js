@@ -4,6 +4,8 @@
 //proposed points (out of 10): 10, I think I did a good job of implementing all of the required parts of this
 //                          assignment in an interesting way and made sure to comment what each part does.
 
+// Pressing 'R' sets the vertice colors to a random RGB to give a different gradient each time.
+// Pressing 'S' sets the speed to 0 to stop it's rotation completely.
 "use strict";
 
 var canvas;
@@ -30,18 +32,19 @@ window.onload = function init()
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0.9, 0.9, 0.9, 1.0); //Light Gray Color
 
-    //  Load shaders and initialize attribute buffers
-    var program = initShaders(gl, "vertex-shader", "fragment-shader");
-    gl.useProgram(program);
+    //  Load shaders and initialize attribute buffers.
+    //  Red square vertex shader.
+    var programR = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(programR);
 
-    let colors = [
+    let colorsR = [
         vec3(1.0, 0.0, 0.0),
-        vec3(1.0, 0.0, 1.0),
-        vec3(0.0, 0.0, 1.0),
-        vec3(0.0, 0.0, 0.3)
+        vec3(1.0, 0.0, 0.0),
+        vec3(1.0, 0.0, 0.0),
+        vec3(1.0, 0.0, 0.0)
     ];
 
-    var vertices = [
+    var verticesR = [
         vec2(0, 1),
         vec2(-1, 0),
         vec2(1, 0),
@@ -49,28 +52,65 @@ window.onload = function init()
     ];
 
 
-    let cBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
+    let cBufferR = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBufferR );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsR), gl.STATIC_DRAW );
     
-    let colorLoc = gl.getAttribLocation(program, "aColor");
-    gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(colorLoc); 
+    let colorLocR = gl.getAttribLocation(programR, "aColor");
+    gl.vertexAttribPointer(colorLocR, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(colorLocR); 
+
+    //  Blue square vertex shader.
+    var programB = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(programB);
+
+    let colorsB = [
+        vec3(0.0, 0.0, 1.0),
+        vec3(0.0, 0.0, 1.0),
+        vec3(0.0, 0.0, 1.0),
+        vec3(0.0, 0.0, 1.0)
+    ];
+
+    var verticesB = [
+        vec2(0, 1),
+        vec2(-1, 0),
+        vec2(1, 0),
+        vec2(0, -1)
+    ];
+
+
+    let cBufferB = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBufferB );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsB), gl.STATIC_DRAW );
+    
+    let colorLocB = gl.getAttribLocation(programB, "aColor");
+    gl.vertexAttribPointer(colorLocB, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(colorLocB); 
 
 
     // Load the data into the GPU
 
-    var bufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+    var bufferIdB = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferIdB);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesB), gl.STATIC_DRAW);
+
+    var bufferIdR = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferIdR);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(verticesR), gl.STATIC_DRAW);
 
     // Associate out shader variables with our data bufferData
 
-    var positionLoc = gl.getAttribLocation(program, "aPosition");
+    var positionLoc = gl.getAttribLocation(programR, "aPosition");
     gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLoc);
 
-    thetaLoc = gl.getUniformLocation(program, "uTheta");
+    thetaLoc = gl.getUniformLocation(programR, "uTheta");
+
+    var positionLoc = gl.getAttribLocation(programB, "aPosition");
+    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLoc);
+
+    thetaLoc = gl.getUniformLocation(programB, "uTheta");
 
     //Button
     document.getElementById("button").onclick = function() {
@@ -87,36 +127,18 @@ window.onload = function init()
     document.getElementById("Controls").onclick = function(event) {
         switch(event.target.index){
             case 0: //Set color to blue.
-                colors = [
-                    vec3(0.0, 0.0, 1.0),
-                    vec3(0.0, 0.0, 1.0),
-                    vec3(0.0, 0.0, 1.0),
-                    vec3(0.0, 0.0, 1.0)
-                ];
+                gl.bindBuffer( gl.ARRAY_BUFFER, cBufferB );
+                gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsB), gl.STATIC_DRAW );
+                gl.vertexAttribPointer(colorLocB, 3, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(colorLocB);
                 console.log("Color changed to blue.")
-                cBuffer = gl.createBuffer();
-                gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-                gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
-    
-                colorLoc = gl.getAttribLocation(program, "aColor");
-                gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(colorLoc);
                 break;
             case 1: //Set color to red.
-                colors = [
-                    vec3(1.0, 0.0, 0.0),
-                    vec3(1.0, 0.0, 0.0),
-                    vec3(1.0, 0.0, 0.0),
-                    vec3(1.0, 0.0, 0.0)
-                ];
+                gl.bindBuffer( gl.ARRAY_BUFFER, cBufferR );
+                gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsR), gl.STATIC_DRAW );
+                gl.vertexAttribPointer(colorLocR, 3, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(colorLocR);
                 console.log("Color changed to red.")
-                cBuffer = gl.createBuffer();
-                gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-                gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
-    
-                colorLoc = gl.getAttribLocation(program, "aColor");
-                gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(colorLoc);
                 break;
             case 2: //Increase speed by 0.05, max of 0.4.
                     if (speed < 0.4) {
@@ -156,7 +178,7 @@ window.onload = function init()
                 gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
                 gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
                 
-                let colorLoc = gl.getAttribLocation(program, "aColor");
+                let colorLoc = gl.getAttribLocation(programR, "aColor");
                 gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(colorLoc); 
 
